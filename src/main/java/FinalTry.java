@@ -18,6 +18,7 @@ import javax.crypto.spec.PSource;
 
 public class FinalTry {
     private static String node_rsa_init = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
+    private final static int blockSize = 190;
     public static void main(String[] args) throws Exception {
         // Generate a new RSA key pair
       /*  KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
@@ -48,20 +49,14 @@ public class FinalTry {
     }
 
     public static byte[] encryptWithPublicKey(String plaintext) throws Exception {
-        // Create a cipher object using the public key and encryption algorithm
-        //Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         Cipher cipher = Cipher.getInstance(node_rsa_init);
         PublicKey publicKey = readPublicKeyFromPem();
 
         cipher.init(Cipher.ENCRYPT_MODE, publicKey,
                 new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT));
 
-
         // Divide the plaintext into smaller chunks of a fixed size
-        int blockSize = 117;
-        byte[] buffer = new byte[blockSize];
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
         for (int i = 0; i < plaintext.length(); i += blockSize) {
             int length = Math.min(blockSize, plaintext.length() - i);
             byte[] encryptedBlock = cipher.doFinal(plaintext.substring(i, i + length).getBytes(StandardCharsets.UTF_8));
@@ -72,17 +67,14 @@ public class FinalTry {
     }
 
     public static String decryptWithPrivateKey(byte[] ciphertext) throws Exception {
-        // Create a cipher object using the private key and decryption algorithm
         Cipher cipher = Cipher.getInstance(node_rsa_init);
         PrivateKey privateKey = readPrivateKeyFromPem();
 
         cipher.init(Cipher.DECRYPT_MODE, privateKey,
                 new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT));
 
-
         // Divide the ciphertext into smaller chunks of a fixed size
         int blockSize = 256;
-        byte[] buffer = new byte[blockSize];
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         for (int i = 0; i < ciphertext.length; i += blockSize) {
