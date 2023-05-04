@@ -1,3 +1,5 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
@@ -45,12 +47,14 @@ public class CryptoHelper {
 
 
             // encrypt
-            String s = "The quick brown fox jumps over the lazy dog";
-            String enc = CryptoHelper.encryptStringWithPublicKey(s);
-            System.out.println( String.format("%s -> %s", s, enc));
+            //String s = "The quick brown fox jumps over the lazy dog";
+            Person person = new Person("John", "Doe", 30);
+            String encryptedData = CryptoHelper.encryptStringWithPublicKey(person);
+            System.out.println("Encrypted data: " + encryptedData);
 
 
-            String dec = CryptoHelper.decryptStringWithPrivateKey(enc);
+            Person decryptedPerson = CryptoHelper.decryptStringWithPrivateKey(encryptedData, Person.class);
+            System.out.println("Decrypted data: " + decryptedPerson);
             //System.out.println(String.format("%s -> %s", enc, dec));
         } catch (Exception ex) {
             System.out.println(ex);
@@ -58,26 +62,31 @@ public class CryptoHelper {
 
     }
 
-    public static String encryptStringWithPublicKey(String s) throws Exception {
+    public static <T> String encryptStringWithPublicKey(T object) throws Exception {
         Cipher cipher = Cipher.getInstance(node_rsa_init);
-        PublicKey pubkey = readPublicKeyFromPem();
+        PublicKey publicKey = readPublicKeyFromPem();
         // encrypt
         // cipher init compatible with node.js crypto module!
-        cipher.init(Cipher.ENCRYPT_MODE, pubkey,
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(object);
+
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey,
                 new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT));
-        String enc = Base64.getEncoder().encodeToString(cipher.doFinal(s.getBytes("UTF-8")));
+        String enc = Base64.getEncoder().encodeToString(cipher.doFinal(json.getBytes("UTF-8")));
         return enc;
     }
 
-    public static String decryptStringWithPrivateKey(String s) throws Exception {
+    public static <T> T decryptStringWithPrivateKey(String encryptedData, Class<T> type) throws Exception {
         Cipher cipher = Cipher.getInstance(node_rsa_init);
-        PrivateKey pkey = readPrivateKeyFromPem();
+        PrivateKey privateKey = readPrivateKeyFromPem();
         // cipher init compatible with node.js crypto module!
-        cipher.init(Cipher.DECRYPT_MODE, pkey,
+        cipher.init(Cipher.DECRYPT_MODE, privateKey,
                 new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT));
-        String dec = new String(cipher.doFinal(Base64.getDecoder().decode(s)), "UTF-8");
+        String dec = new String(cipher.doFinal(Base64.getDecoder().decode(encryptedData)), "UTF-8");
 
-        return dec;
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(dec, type);
     }
 
     public static PrivateKey readPrivateKeyFromPem() throws Exception {
