@@ -1,3 +1,6 @@
+import javax.crypto.Cipher;
+import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PSource;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
@@ -5,44 +8,29 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.*;
-import java.security.interfaces.RSAPublicKey;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.OAEPParameterSpec;
-import javax.crypto.spec.PSource;
-
 public class FinalTry {
     private static String node_rsa_init = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
     private final static int blockSize = 190;
     public static void main(String[] args) throws Exception {
-        // Generate a new RSA key pair
-      /*  KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(2048);
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();*/
-
-        // Get the public key
-
-
-
-       // System.out.println("Public key:");
-        //System.out.println("Modulus: " + rsaPublicKey.getModulus().toString(16));
-       // System.out.println("Exponent: " + rsaPublicKey.getPublicExponent().toString(16));
 
         // Encrypt a long string in small chunks using the public key
         String longString = "{\"statusType\":\"OK\",\"entity\":[{\"customerStatusId\":2,\"customerStatusName\":\"Data Received\",\"customerStatusDescription\":\"Data Received\"},{\"customerStatusId\":3,\"customerStatusName\":\"Data Verification In Progress\",\"customerStatusDescription\":\"Data Verification In Progress\"},{\"customerStatusId\":5,\"customerStatusName\":\"Data Verification Failed\",\"customerStatusDescription\":\"Data Verification Failed\"},{\"customerStatusId\":7,\"customerStatusName\":\"Credit Approved\",\"customerStatusDescription\":\"Credit Approved\"},{\"customerStatusId\":16,\"customerStatusName\":\"Temporary Block\",\"customerStatusDescription\":\"Temporary Block\"},{\"customerStatusId\":11,\"customerStatusName\":\"Permanent Block\",\"customerStatusDescription\":\"Permanent Block\"}],\"entityType\":\"java.util.ArrayList\",\"metadata\":{},\"status\":200}";
-        byte[] encryptedString = encryptWithPublicKey(longString);
+        byte[] encryptedStringInByteArray = encryptWithPublicKey(longString);
 
         // Print the encrypted string in Base64 format
         System.out.println("Encrypted string:");
-        System.out.println(Base64.getEncoder().encodeToString(encryptedString));
+        System.out.println(Base64.getEncoder().encodeToString(encryptedStringInByteArray));
 
         // Decrypt the encrypted string using the private key
-        String decryptedString = decryptWithPrivateKey(encryptedString);
+        String decryptedString = decryptWithPrivateKey(encryptedStringInByteArray);
 
         System.out.println("Decrypted string:");
         System.out.println(decryptedString);
