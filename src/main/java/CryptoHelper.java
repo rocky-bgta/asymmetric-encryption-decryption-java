@@ -3,8 +3,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.crypto.Cipher;
 import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,6 +65,7 @@ public class CryptoHelper {
     }
 
     public static <T> String encryptStringWithPublicKey(T object) throws Exception {
+        String encryptedString;
         Cipher cipher = Cipher.getInstance(node_rsa_init);
         PublicKey publicKey = readPublicKeyFromPem();
         // encrypt
@@ -73,17 +76,46 @@ public class CryptoHelper {
 
         cipher.init(Cipher.ENCRYPT_MODE, publicKey,
                 new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT));
-        String enc = Base64.getEncoder().encodeToString(cipher.doFinal(json.getBytes("UTF-8")));
-        return enc;
+
+        // Divide the plaintext into smaller chunks of a fixed size
+        int blockSize = 117;
+        //byte[] buffer = new byte[blockSize];
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        for (int i = 0; i < json.length(); i += blockSize) {
+            int length = Math.min(blockSize, json.length() - i);
+            byte[] encryptedBlock = cipher.doFinal(json.substring(i, i + length).getBytes(StandardCharsets.UTF_8));
+            outputStream.write(encryptedBlock);
+        }
+        // Encode the byte array as a Base64-encoded string
+        encryptedString =Base64.getEncoder().encodeToString(outputStream.toByteArray());
+        return encryptedString;
+
     }
 
     public static <T> T decryptStringWithPrivateKey(String encryptedData, Class<T> type) throws Exception {
         Cipher cipher = Cipher.getInstance(node_rsa_init);
         PrivateKey privateKey = readPrivateKeyFromPem();
         // cipher init compatible with node.js crypto module!
+        byte[] encryptedString = encryptedData.getBytes();
         cipher.init(Cipher.DECRYPT_MODE, privateKey,
                 new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT));
-        String dec = new String(cipher.doFinal(Base64.getDecoder().decode(encryptedData)), "UTF-8");
+
+
+        // Divide the ciphertext into smaller chunks of a fixed size
+        int blockSize = 256;
+        byte[] buffer = new byte[blockSize];
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        for (int i = 0; i < encryptedString.length; i += blockSize) {
+            int length = Math.min(blockSize, encryptedString.length - i);
+            byte[] decryptedBlock = cipher.doFinal(encryptedString, i, length);
+            outputStream.write(decryptedBlock);
+        }
+
+        //String dec = new String(cipher.doFinal(Base64.getDecoder().decode(encryptedData)), "UTF-8");
+        String dec = new String(outputStream.toByteArray(),StandardCharsets.UTF_8);
+        //String dec = new String(cipher.doFinal(Base64.getDecoder().decode(encryptedData)), "UTF-8");
 
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(dec, type);
