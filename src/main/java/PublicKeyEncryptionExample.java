@@ -89,7 +89,7 @@ public class PublicKeyEncryptionExample {
     }
 
     public static PublicKey readPublicKeyFromPem() throws Exception {
-        ClassLoader classLoader = CryptoHelper.class.getClassLoader();
+        ClassLoader classLoader = CryptoHelperOld.class.getClassLoader();
         URL resourceUrl = classLoader.getResource("public_key.pem");
         Path filePath = Paths.get(resourceUrl.toURI());
 
@@ -114,7 +114,7 @@ public class PublicKeyEncryptionExample {
     }
 
     public static PrivateKey readPrivateKeyFromPem_PKCS8() throws Exception {
-        ClassLoader classLoader = CryptoHelper.class.getClassLoader();
+        ClassLoader classLoader = CryptoHelperOld.class.getClassLoader();
         URL resourceUrl = classLoader.getResource("private_key.pem");
         Path filePath = Paths.get(resourceUrl.toURI());
 
