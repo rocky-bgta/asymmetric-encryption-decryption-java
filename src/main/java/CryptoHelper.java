@@ -28,7 +28,9 @@ public class CryptoHelper {
             //String privateKeyfile = "../pvkey.pem";
             // https://acte.ltd/utils/openssl
 
-            /*  # Private key
+            /*
+
+            # Private key
                         openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
 
             # Public key
@@ -45,13 +47,11 @@ public class CryptoHelper {
             // encrypt
             String s = "The quick brown fox jumps over the lazy dog";
             String enc = CryptoHelper.encryptStringWithPublicKey(s);
-            //System.out.println( String.format("%s -> %s", s, enc));
+            System.out.println( String.format("%s -> %s", s, enc));
 
-            // decrypt
-            String nodeJSEncrypted = "O9UhqjomngHWkLzSsyMurY96KLgDWTxxqc37KLrQoUryTy1c6smpRnVKAfikEPNCpUpAjTaHtUseR+9Mk/O5HvlIfovn1vuwyBq7u6DMf2NWKjZswvU14N+Cp3E2OMVb5biWJZRQs9htG7/A7oW2pxW3DGZxF0yftxJZNryICQmydj73+kq0anG15pyNwnyID2uu4/tngyABxOfSf+f5Yf/yDeKXEMDlcxMfnCxjnKhn1C+uufxG0PGGgYev9lYNQBPkZMQ0Lfhm/VGDulfUTJ6VNYnCxqM6t1t4ixJyjrBglTJdStMwP+FuVBf9w3LKd9G3gzNvTgyg+RV2S9h8+A==";
 
-            String dec = CryptoHelper.decryptStringWithPrivateKey(nodeJSEncrypted);
-            System.out.println(String.format("%s -> %s", enc, dec));
+            String dec = CryptoHelper.decryptStringWithPrivateKey(enc);
+            //System.out.println(String.format("%s -> %s", enc, dec));
         } catch (Exception ex) {
             System.out.println(ex);
         }
